@@ -1,6 +1,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { SendHorizontal } from 'lucide-react';
+import { SendHorizontal, Globe } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 type Message = {
