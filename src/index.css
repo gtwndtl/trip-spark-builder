@@ -208,6 +208,17 @@
   background: linear-gradient(to bottom, rgba(0,0,0,0.4), rgba(0,0,0,0.6));
 }
 
+/* Loading animation */
+.loading {
+  @apply inline-block w-5 h-5 border-2 border-t-transparent border-white rounded-full;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
 /* Apple-inspired responsive design */
 @media (max-width: 768px) {
   .mobile-menu {

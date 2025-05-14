@@ -1,8 +1,9 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { SendHorizontal, Globe } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
+import RecommendedTrips from './RecommendedTrips';
+import LongdoMap from './LongdoMap';
 
 type Message = {
   id: string;
@@ -291,14 +292,9 @@ const ChatInterface = () => {
           
           <div className="glass-card rounded-xl shadow-lg overflow-hidden">
             {!showItinerary ? (
-              <div className="flex flex-col items-center justify-center h-full p-6 text-center">
-                <div className="text-8xl mb-6 text-gray-300">
-                  <Globe className="w-24 h-24 mx-auto animate-pulse-slow" />
-                </div>
-                <h3 className="text-2xl font-light text-tripDark mb-2">แผนการท่องเที่ยวของคุณ</h3>
-                <p className="text-gray-500">
-                  แชทกับผู้ช่วยของเราเพื่อรับแผนการท่องเที่ยวที่ปรับแต่งให้เหมาะกับคุณ
-                </p>
+              <div className="flex flex-col space-y-4">
+                <RecommendedTrips />
+                <LongdoMap />
               </div>
             ) : (
               <>

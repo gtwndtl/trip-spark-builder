@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
 
 const Header = () => {
@@ -14,18 +15,18 @@ const Header = () => {
       <div className="container mx-auto px-4 py-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center">
-            <h1 className="text-2xl font-semibold text-tripDark">
+            <Link to="/" className="text-2xl font-semibold text-tripDark">
               <span className="text-tripPurple">TRIP</span> PLANNER
-            </h1>
+            </Link>
           </div>
 
           {/* Desktop Navigation */}
           <nav className="hidden md:block">
             <ul className="flex space-x-8">
               <li>
-                <a href="#" className="text-gray-600 hover:text-tripPurple transition-colors font-light text-base">
+                <Link to="/" className="text-gray-600 hover:text-tripPurple transition-colors font-light text-base">
                   หน้าแรก
-                </a>
+                </Link>
               </li>
               <li>
                 <a href="#" className="text-gray-600 hover:text-tripPurple transition-colors font-light text-base">
@@ -38,12 +39,12 @@ const Header = () => {
                 </a>
               </li>
               <li>
-                <a 
-                  href="#" 
+                <Link 
+                  to="/auth" 
                   className="apple-button px-4 py-2 text-white rounded-full hover:bg-opacity-90 transition-all"
                 >
                   เริ่มต้นใช้งาน
-                </a>
+                </Link>
               </li>
             </ul>
           </nav>
@@ -74,13 +75,13 @@ const Header = () => {
         </div>
         <ul className="p-4">
           <li className="py-2">
-            <a 
-              href="#" 
+            <Link 
+              to="/" 
               className="text-lg text-gray-800 hover:text-tripPurple transition-colors"
               onClick={toggleMobileMenu}
             >
               หน้าแรก
-            </a>
+            </Link>
           </li>
           <li className="py-2">
             <a 
@@ -101,13 +102,13 @@ const Header = () => {
             </a>
           </li>
           <li className="py-4">
-            <a 
-              href="#" 
+            <Link 
+              to="/auth" 
               className="apple-button px-6 py-3 text-white rounded-full block text-center"
               onClick={toggleMobileMenu}
             >
               เริ่มต้นใช้งาน
-            </a>
+            </Link>
           </li>
         </ul>
       </div>
