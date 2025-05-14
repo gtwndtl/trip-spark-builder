@@ -2,6 +2,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { SendHorizontal, Globe } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 type Message = {
   id: string;
@@ -41,6 +42,7 @@ const ChatInterface = () => {
   
   const chatEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+  const isMobile = useIsMobile();
   
   // Sample itinerary data (in real app, this would come from the API)
   const sampleItinerary = [
@@ -231,12 +233,15 @@ const ChatInterface = () => {
   return (
     <section id="chatSection" className="py-16">
       <div className="container mx-auto px-4">
-        <h2 className="text-3xl font-bold text-center mb-8">Plan Your Trip</h2>
+        <h2 className="text-3xl font-light text-center mb-3">
+          <span className="font-normal">Plan</span> Your Trip
+        </h2>
+        <p className="text-center text-gray-600 mb-8">วางแผนการเดินทางของคุณด้วยผู้ช่วย AI ส่วนตัว</p>
         
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+          <div className="glass-card rounded-xl shadow-lg overflow-hidden">
             <div className="p-4 bg-tripPurple text-white">
-              <h3 className="text-xl font-semibold">แชทกับผู้ช่วยวางแผนทริป</h3>
+              <h3 className="text-xl font-light">แชทกับผู้ช่วยวางแผนทริป</h3>
             </div>
             
             <div className="chat-container p-4">
@@ -271,12 +276,12 @@ const ChatInterface = () => {
                   onChange={(e) => setNewMessage(e.target.value)}
                   onKeyDown={handleKeyDown}
                   placeholder="พิมพ์ข้อความของคุณที่นี่..."
-                  className="flex-1 p-3 border border-gray-300 rounded-l-md focus:outline-none focus:ring-2 focus:ring-tripPurple"
+                  className="flex-1 p-3 border border-gray-200 rounded-l-md focus:outline-none focus:ring-2 focus:ring-tripPurple"
                   rows={1}
                 ></textarea>
                 <button
                   onClick={handleSendMessage}
-                  className="bg-tripPurple text-white p-3 rounded-r-md hover:bg-opacity-90 transition-colors"
+                  className="apple-button p-3 rounded-r-md"
                 >
                   <SendHorizontal size={20} />
                 </button>
@@ -284,13 +289,13 @@ const ChatInterface = () => {
             </div>
           </div>
           
-          <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+          <div className="glass-card rounded-xl shadow-lg overflow-hidden">
             {!showItinerary ? (
               <div className="flex flex-col items-center justify-center h-full p-6 text-center">
                 <div className="text-8xl mb-6 text-gray-300">
                   <Globe className="w-24 h-24 mx-auto animate-pulse-slow" />
                 </div>
-                <h3 className="text-2xl font-semibold text-tripDark mb-2">แผนการท่องเที่ยวของคุณ</h3>
+                <h3 className="text-2xl font-light text-tripDark mb-2">แผนการท่องเที่ยวของคุณ</h3>
                 <p className="text-gray-500">
                   แชทกับผู้ช่วยของเราเพื่อรับแผนการท่องเที่ยวที่ปรับแต่งให้เหมาะกับคุณ
                 </p>
@@ -298,16 +303,18 @@ const ChatInterface = () => {
             ) : (
               <>
                 <div className="p-4 bg-tripPurple text-white">
-                  <h3 className="text-xl font-semibold">แผนการเดินทางของคุณที่ {preferences.destination}</h3>
+                  <h3 className="text-xl font-light">แผนการเดินทางของคุณที่ {preferences.destination}</h3>
                   <p className="text-sm">
                     {preferences.duration} วัน • {preferences.budget} • {preferences.style}
                   </p>
                 </div>
                 
-                <div className="p-6 overflow-auto" style={{ maxHeight: 'calc(100vh - 16rem)' }}>
+                <div className="p-6 overflow-auto" style={{ 
+                  maxHeight: isMobile ? 'calc(50vh)' : 'calc(100vh - 16rem)' 
+                }}>
                   {itinerary.map((day, index) => (
                     <div key={index} className="mb-8">
-                      <h4 className="text-xl font-bold mb-4">วันที่ {day.day} - {day.date}</h4>
+                      <h4 className="text-xl font-medium mb-4">วันที่ {day.day} - {day.date}</h4>
                       
                       <div className="ml-4">
                         {day.activities.map((activity: any, actIdx: number) => (
@@ -333,7 +340,7 @@ const ChatInterface = () => {
                   ))}
                   
                   <button 
-                    className="w-full py-3 bg-tripOrange text-white rounded-md hover:bg-opacity-90 transition-colors mt-4"
+                    className="apple-button w-full py-3 text-white rounded-md hover:bg-opacity-90 mt-4"
                     onClick={() => {
                       toast({
                         title: "แผนการเดินทางถูกบันทึกแล้ว",
