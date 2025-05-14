@@ -19,6 +19,11 @@ export default {
 			}
 		},
 		extend: {
+			fontFamily: {
+				sans: ['Prompt', 'Sarabun', 'sans-serif'],
+				sarabun: ['Sarabun', 'sans-serif'],
+				prompt: ['Prompt', 'sans-serif'],
+			},
 			colors: {
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
