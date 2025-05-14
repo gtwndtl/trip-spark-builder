@@ -1,3 +1,4 @@
+
 import * as React from "react"
 
 import { cn } from "@/lib/utils"
@@ -104,6 +105,59 @@ const TableCaption = React.forwardRef<
   />
 ))
 TableCaption.displayName = "TableCaption"
+
+/* Add print styles */
+if (typeof document !== "undefined") {
+  const style = document.createElement("style")
+  style.textContent = `
+    @media print {
+      @page {
+        margin: 1cm;
+      }
+      body {
+        font-family: 'Sarabun', 'Prompt', sans-serif !important;
+        background: white !important;
+        color: black !important;
+      }
+      .glass-card {
+        background: white !important;
+        box-shadow: none !important;
+        border: none !important;
+        backdrop-filter: none !important;
+      }
+      .bg-tripPurple {
+        background-color: #f3f4f6 !important;
+        color: #1f2937 !important;
+        -webkit-print-color-adjust: exact;
+      }
+      header, footer, .apple-button, nav, .chat-container, section:not(:has(table)) {
+        display: none !important;
+      }
+      h2, h3, h4 {
+        color: #1f2937 !important;
+        break-after: avoid;
+      }
+      table {
+        border-collapse: collapse;
+        width: 100%;
+        page-break-inside: avoid;
+      }
+      tr {
+        page-break-inside: avoid;
+      }
+      td, th {
+        border: 1px solid #ddd;
+      }
+      .itinerary-day:before {
+        color: #9b87f5 !important;
+        -webkit-print-color-adjust: exact;
+      }
+    }
+  `
+  if (document.head) {
+    document.head.appendChild(style)
+  }
+}
 
 export {
   Table,

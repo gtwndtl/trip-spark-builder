@@ -1,4 +1,5 @@
 
+
 export interface TripPreferences {
   destination: string | null;
   duration: number | null;
@@ -30,3 +31,4 @@ export interface FullItinerary {
   preferences: TripPreferences;
   days: DayItinerary[];
 }
+
