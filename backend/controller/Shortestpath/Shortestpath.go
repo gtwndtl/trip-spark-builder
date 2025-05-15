@@ -1,4 +1,4 @@
-package controllers
+package shortestpath
 
 import (
 	"net/http"

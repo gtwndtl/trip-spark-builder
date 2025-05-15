@@ -1,4 +1,4 @@
-package controllers
+package landmark
 
 import (
 	"net/http"
