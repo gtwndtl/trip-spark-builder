@@ -1,18 +1,11 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { SendHorizontal } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import { useIsMobile } from '@/hooks/use-mobile';
-import RecommendedTrips from './RecommendedTrips';
-import LongdoMap from './LongdoMap';
-import { FullItinerary, TripPreferences } from '@/types';
 
-type Message = {
-  id: string;
-  text: string;
-  sender: 'user' | 'bot';
-  timestamp: Date;
-};
+import React, { useState } from 'react';
+import { useToast } from '@/hooks/use-toast';
+import { FullItinerary, TripPreferences } from '@/types';
+import { Message, DayItinerary } from '@/types/chat';
+import ChatContainer from './chat/ChatContainer';
+import ChatInput from './chat/ChatInput';
+import ChatRightPanel from './chat/ChatRightPanel';
 
 const initialMessages: Message[] = [
   {
@@ -34,13 +27,10 @@ const ChatInterface = () => {
     style: null
   });
   const [showItinerary, setShowItinerary] = useState(false);
-  const [itinerary, setItinerary] = useState<any[]>([]);
+  const [itinerary, setItinerary] = useState<DayItinerary[]>([]);
   const [fullItinerary, setFullItinerary] = useState<FullItinerary | null>(null);
   
-  const chatEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
-  const isMobile = useIsMobile();
-  const navigate = useNavigate();
   
   // Mock function to analyze message and extract preferences
   const analyzeMessage = (message: string) => {
@@ -286,21 +276,6 @@ const ChatInterface = () => {
     }
   };
 
-  const handleViewFullSummary = () => {
-    if (fullItinerary) {
-      navigate('/trip-summary', { state: { itinerary: fullItinerary } });
-    } else {
-      toast({
-        title: "ไม่พบข้อมูลแผนการเดินทาง",
-        description: "กรุณาสร้างแผนการเดินทางให้เสร็จสมบูรณ์ก่อน",
-      });
-    }
-  };
-
-  useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
-
   return (
     <section id="chatSection" className="py-16">
       <div className="container mx-auto px-4">
@@ -315,120 +290,21 @@ const ChatInterface = () => {
               <h3 className="text-xl font-light">แชทกับผู้ช่วยวางแผนทริป</h3>
             </div>
             
-            <div className="chat-container p-4">
-              {messages.map((message) => (
-                <div 
-                  key={message.id} 
-                  className={`message-bubble ${message.sender === 'user' ? 'user-message' : 'bot-message'}`}
-                >
-                  {message.text.split('\n').map((text, i) => (
-                    <p key={i} className={i > 0 ? 'mt-2' : ''}>{text}</p>
-                  ))}
-                </div>
-              ))}
-              
-              {isTyping && (
-                <div className="message-bubble bot-message">
-                  <div className="typing-indicator">
-                    <span className="typing-dot"></span>
-                    <span className="typing-dot"></span>
-                    <span className="typing-dot"></span>
-                  </div>
-                </div>
-              )}
-              
-              <div ref={chatEndRef}></div>
-            </div>
-            
-            <div className="p-4 border-t">
-              <div className="flex">
-                <textarea
-                  value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  placeholder="พิมพ์ข้อความของคุณที่นี่..."
-                  className="flex-1 p-3 border border-gray-200 rounded-l-md focus:outline-none focus:ring-2 focus:ring-tripPurple"
-                  rows={1}
-                ></textarea>
-                <button
-                  onClick={handleSendMessage}
-                  className="apple-button p-3 rounded-r-md"
-                >
-                  <SendHorizontal size={20} />
-                </button>
-              </div>
-            </div>
+            <ChatContainer messages={messages} isTyping={isTyping} />
+            <ChatInput 
+              newMessage={newMessage}
+              setNewMessage={setNewMessage}
+              handleSendMessage={handleSendMessage}
+              handleKeyDown={handleKeyDown}
+            />
           </div>
           
-          <div className="glass-card rounded-xl shadow-lg overflow-hidden">
-            {!showItinerary ? (
-              <div className="flex flex-col space-y-4">
-                <RecommendedTrips />
-                <LongdoMap />
-              </div>
-            ) : (
-              <>
-                <div className="p-4 bg-tripPurple text-white">
-                  <h3 className="text-xl font-light">แผนการเดินทางของคุณที่ {preferences.destination}</h3>
-                  <p className="text-sm">
-                    {preferences.duration} วัน • {preferences.budget} • {preferences.style}
-                  </p>
-                </div>
-                
-                <div className="p-6 overflow-auto" style={{ 
-                  maxHeight: isMobile ? 'calc(50vh)' : 'calc(100vh - 16rem)' 
-                }}>
-                  {itinerary.map((day, index) => (
-                    <div key={index} className="mb-8">
-                      <h4 className="text-xl font-medium mb-4">วันที่ {day.day} - {day.date}</h4>
-                      
-                      <div className="ml-4">
-                        {day.activities.map((activity: any, actIdx: number) => (
-                          <div key={actIdx} className="itinerary-day">
-                            <div className="itinerary-time">{activity.time}</div>
-                            <div className="itinerary-activity">
-                              <div className="itinerary-activity-title">{activity.title}</div>
-                              <div className="itinerary-activity-description">{activity.description}</div>
-                            </div>
-                            
-                            {actIdx < day.routes.length && (
-                              <div className="itinerary-route">
-                                <span className="itinerary-route-icon">→</span>
-                                <span>
-                                  {day.routes[actIdx].from} ถึง {day.routes[actIdx].to} ({day.routes[actIdx].transport}, {day.routes[actIdx].duration})
-                                </span>
-                              </div>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                  
-                  <div className="flex gap-3 mt-4">
-                    <button 
-                      className="apple-button flex-1 py-3 text-white rounded-md hover:bg-opacity-90"
-                      onClick={() => {
-                        toast({
-                          title: "แผนการเดินทางถูกบันทึกแล้ว",
-                          description: "คุณสามารถเข้าถึงแผนการเดินทางได้ในหน้าโปรไฟล์ของคุณ",
-                        });
-                      }}
-                    >
-                      บันทึกแผนการเดินทาง
-                    </button>
-                    
-                    <button 
-                      className="bg-tripOrange/80 flex-1 py-3 text-white rounded-md hover:bg-tripOrange transition-colors"
-                      onClick={handleViewFullSummary}
-                    >
-                      ดูสรุปแผนการเดินทาง
-                    </button>
-                  </div>
-                </div>
-              </>
-            )}
-          </div>
+          <ChatRightPanel
+            showItinerary={showItinerary}
+            itinerary={itinerary}
+            preferences={preferences}
+            fullItinerary={fullItinerary}
+          />
         </div>
       </div>
     </section>
