@@ -1,9 +1,14 @@
 
 import React, { useState } from 'react';
 import { Message } from '@/types/chat';
+import { useNavigate } from 'react-router-dom';
+import { useToast } from '@/hooks/use-toast';
 import ChatContainer from './chat/ChatContainer';
 import ChatInput from './chat/ChatInput';
 import ChatRightPanel from './chat/ChatRightPanel';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { TripPreferences } from '@/types';
 
 // Initial welcome message
 const initialMessages: Message[] = [
@@ -20,9 +25,12 @@ const ChatInterface = () => {
   const [newMessage, setNewMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [showItinerary, setShowItinerary] = useState(false);
+  const [tripPreferences, setTripPreferences] = useState<TripPreferences | null>(null);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const { toast } = useToast();
+  const navigate = useNavigate();
   
-  // Basic handler for sending messages - replace with your LLM integration
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (!newMessage.trim()) return;
     
     // Add user message to chat
@@ -37,12 +45,126 @@ const ChatInterface = () => {
     setNewMessage('');
     setIsTyping(true);
     
-    // Simulate typing indicator then response
-    // Replace this with your actual LLM integration
-    setTimeout(() => {
+    try {
+      // Send message to API
+      const response = await fetch('http://127.0.0.1:8000/plan-trip', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ message: newMessage }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('API request failed');
+      }
+      
+      const data = await response.json();
+      
+      // Process the parsed data
+      if (data.parsed) {
+        const parsedPreferences = {
+          destination: data.parsed.destination || null,
+          duration: data.parsed.days || null,
+          budget: data.parsed.budget ? `${data.parsed.budget} บาท` : null,
+          style: data.parsed.style || null,
+        };
+        
+        setTripPreferences(parsedPreferences);
+        
+        // Create confirmation bot message
+        const botMsg: Message = {
+          id: Date.now().toString(),
+          text: `ตามที่คุณต้องการ ฉันเข้าใจว่าคุณต้องการเดินทางไปที่ ${parsedPreferences.destination} เป็นเวลา ${parsedPreferences.duration} วัน ในรูปแบบ ${parsedPreferences.style} ด้วยงบประมาณ ${parsedPreferences.budget}\n\nข้อมูลถูกต้องไหมคะ? เราจะเริ่มวางแผนการเดินทางเลยมั้ย?`,
+          sender: 'bot',
+          timestamp: new Date()
+        };
+        
+        setIsTyping(false);
+        setMessages(prev => [...prev, botMsg]);
+        setShowConfirmDialog(true);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      
+      // Add error message
+      const errorMsg: Message = {
+        id: Date.now().toString(),
+        text: 'ขออภัยค่ะ เกิดข้อผิดพลาดในการประมวลผลข้อมูล กรุณาลองใหม่อีกครั้ง',
+        sender: 'bot',
+        timestamp: new Date()
+      };
+      
       setIsTyping(false);
-      // This is where you would call your LLM and handle the response
-    }, 1000);
+      setMessages(prev => [...prev, errorMsg]);
+      
+      toast({
+        title: "เกิดข้อผิดพลาด",
+        description: "ไม่สามารถประมวลผลข้อมูลได้ กรุณาลองใหม่อีกครั้ง",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleConfirmTrip = async () => {
+    setShowConfirmDialog(false);
+    setIsTyping(true);
+    
+    try {
+      // Here you would send the trip preferences to your backend
+      const response = await fetch('http://127.0.0.1:8000/api/trip_planner', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ preferences: tripPreferences }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to plan trip');
+      }
+      
+      const result = await response.json();
+      
+      // Show processing message
+      const processingMsg: Message = {
+        id: Date.now().toString(),
+        text: 'กำลังวางแผนการเดินทางให้คุณ กรุณารอสักครู่...',
+        sender: 'bot',
+        timestamp: new Date()
+      };
+      
+      setIsTyping(false);
+      setMessages(prev => [...prev, processingMsg]);
+      
+      // Navigate to trip summary page with the result data
+      setTimeout(() => {
+        navigate('/trip-summary', { 
+          state: { 
+            itinerary: result 
+          } 
+        });
+      }, 1500);
+      
+    } catch (error) {
+      console.error('Error planning trip:', error);
+      
+      const errorMsg: Message = {
+        id: Date.now().toString(),
+        text: 'ขออภัยค่ะ เกิดข้อผิดพลาดในการวางแผนการเดินทาง กรุณาลองใหม่อีกครั้ง',
+        sender: 'bot',
+        timestamp: new Date()
+      };
+      
+      setIsTyping(false);
+      setMessages(prev => [...prev, errorMsg]);
+      
+      toast({
+        title: "เกิดข้อผิดพลาด",
+        description: "ไม่สามารถวางแผนการเดินทางได้ กรุณาลองใหม่อีกครั้ง",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -78,7 +200,7 @@ const ChatInterface = () => {
           <ChatRightPanel
             showItinerary={showItinerary}
             itinerary={[]}
-            preferences={{
+            preferences={tripPreferences || {
               destination: null,
               duration: null,
               budget: null,
@@ -88,6 +210,34 @@ const ChatInterface = () => {
           />
         </div>
       </div>
+      
+      {/* Confirmation Dialog */}
+      <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>ยืนยันการวางแผนการเดินทาง</DialogTitle>
+            <DialogDescription>
+              {tripPreferences && (
+                <div className="py-4">
+                  <p className="mb-2"><strong>จุดหมายปลายทาง:</strong> {tripPreferences.destination}</p>
+                  <p className="mb-2"><strong>ระยะเวลา:</strong> {tripPreferences.duration} วัน</p>
+                  <p className="mb-2"><strong>งบประมาณ:</strong> {tripPreferences.budget}</p>
+                  <p className="mb-2"><strong>สไตล์การท่องเที่ยว:</strong> {tripPreferences.style}</p>
+                </div>
+              )}
+              <p>ข้อมูลถูกต้องหรือไม่? เราจะเริ่มวางแผนการเดินทางเลยมั้ย</p>
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex justify-end gap-3">
+            <Button variant="outline" onClick={() => setShowConfirmDialog(false)}>
+              แก้ไขข้อมูล
+            </Button>
+            <Button onClick={handleConfirmTrip}>
+              เริ่มวางแผนการเดินทาง
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </section>
   );
 };

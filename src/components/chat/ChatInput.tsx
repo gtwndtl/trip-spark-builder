@@ -22,13 +22,14 @@ const ChatInput = ({
           value={newMessage}
           onChange={(e) => setNewMessage(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="พิมพ์ข้อความของคุณที่นี่..."
+          placeholder="บอกฉันเกี่ยวกับทริปที่คุณต้องการ เช่น สถานที่ งบประมาณ จำนวนวัน และสไตล์การท่องเที่ยว"
           className="flex-1 p-3 border border-gray-200 rounded-l-md focus:outline-none focus:ring-2 focus:ring-tripPurple"
-          rows={1}
+          rows={2}
         ></textarea>
         <button
           onClick={handleSendMessage}
           className="apple-button p-3 rounded-r-md"
+          disabled={!newMessage.trim()}
         >
           <SendHorizontal size={20} />
         </button>
