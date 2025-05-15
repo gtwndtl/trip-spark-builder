@@ -2,7 +2,7 @@
 import React, { useRef, useEffect } from 'react';
 import ChatMessage from './ChatMessage';
 import TypingIndicator from './TypingIndicator';
-import { Message } from '@/types';
+import { Message } from '@/types/chat';
 
 type ChatContainerProps = {
   messages: Message[];
