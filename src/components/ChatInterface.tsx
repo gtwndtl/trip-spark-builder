@@ -112,6 +112,7 @@ const ChatInterface = () => {
     
     try {
       // Here you would send the trip preferences to your backend
+      // This is just a placeholder for future implementation
       const response = await fetch('http://127.0.0.1:8000/api/trip_planner', {
         method: 'POST',
         headers: {
