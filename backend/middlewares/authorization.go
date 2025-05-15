@@ -1,59 +1,40 @@
 package middlewares
 
 import (
-    "net/http"
-    "time"
-    "strings"
-    "github.com/sut67/team09/services"
-    "github.com/gin-gonic/gin"
+	"net/http"
+	"strings"
+
+	"github.com/dgrijalva/jwt-go"
+	"github.com/gin-gonic/gin"
 )
 
-var HashKey = []byte("very-secret")
-var BlockKey = []byte("a-lot-secret1234")
+var SecretKey = []byte("your_secret_key")
 
-// Authorization เป็นฟังก์ชั่นตรวจเช็ค Cookie
-func Authorizes() gin.HandlerFunc {
-    return func(c *gin.Context) {
-        // Fetch the Authorization header
-        clientToken := c.Request.Header.Get("Authorization")
+// AuthMiddleware สำหรับตรวจสอบ JWT token
+func AuthMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		authHeader := c.GetHeader("Authorization")
+		if authHeader == "" {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "ไม่มี token"})
+			c.Abort()
+			return
+		}
 
-        // Check if the header exists
-        if clientToken == "" {
-            c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "No Authorization header provided"})
-            return
-        }
+		tokenStr := strings.TrimPrefix(authHeader, "Bearer ")
+		token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
+			return SecretKey, nil
+		})
 
-        // Split the header to check for "Bearer" prefix
-        tokenParts := strings.Fields(clientToken)
-        if len(tokenParts) != 2 || tokenParts[0] != "Bearer" {
-            c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error":"Incorrect Authorization header provided"})
-            return
-        }
+		if err != nil || !token.Valid {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "token ไม่ถูกต้อง"})
+			c.Abort()
+			return
+		}
 
-        // Extract the token part from the header
-        clientToken = tokenParts[1]
+		// สามารถ set ค่าไว้ใน context เพื่อนำไปใช้งานต่อได้
+		claims := token.Claims.(jwt.MapClaims)
+		c.Set("user_id", claims["user_id"])
 
-        // Initialize the JWT Wrapper
-        jwtWrapper := services.JwtWrapper{
-            SecretKey: "SvNQpBN8y3qlVrsGAYYWoJJk56LtzFHx", // Ideally, use an environment variable here
-            Issuer:    "AuthService",
-        }
-
-        claims, err := jwtWrapper.ValidateToken(clientToken)
-        if err != nil {
-            c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
-            return
-        }
-
-        // Check if the token is expired
-        if time.Now().Unix() > claims.ExpiresAt {
-            c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Token is expired"})
-            return
-        }
-
-        // Add the email to the context for use in subsequent handlers
-        c.Set("email", claims.Email)
-
-        c.Next()
-    }
+		c.Next()
+	}
 }

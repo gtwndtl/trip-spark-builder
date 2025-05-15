@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/sut67/team09/entity"
+	"github.com/gtwndtl/trip-spark-builder/entity"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
