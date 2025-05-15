@@ -111,14 +111,18 @@ const ChatInterface = () => {
     setIsTyping(true);
     
     try {
-      // Here you would send the trip preferences to your backend
-      // This is just a placeholder for future implementation
-      const response = await fetch('http://127.0.0.1:8000/api/trip_planner', {
+      // Send trip preferences to the backend trip planner API
+      const response = await fetch('http://127.0.0.1:8000/trip-planner', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ preferences: tripPreferences }),
+        body: JSON.stringify({
+          destination: tripPreferences?.destination,
+          duration: tripPreferences?.duration?.toString(),
+          budget: tripPreferences?.budget,
+          style: tripPreferences?.style
+        }),
       });
       
       if (!response.ok) {
@@ -138,11 +142,33 @@ const ChatInterface = () => {
       setIsTyping(false);
       setMessages(prev => [...prev, processingMsg]);
       
+      // Process the JSON data from the plan field
+      let itineraryData;
+      if (result.plan) {
+        try {
+          // Extract the JSON part from the response
+          const jsonMatch = result.plan.match(/```json\n([\s\S]*?)\n```/);
+          if (jsonMatch && jsonMatch[1]) {
+            itineraryData = JSON.parse(jsonMatch[1]);
+          }
+        } catch (error) {
+          console.error('Error parsing JSON from result:', error);
+        }
+      }
+      
       // Navigate to trip summary page with the result data
       setTimeout(() => {
         navigate('/trip-summary', { 
           state: { 
-            itinerary: result 
+            itinerary: {
+              preferences: {
+                destination: tripPreferences?.destination,
+                duration: tripPreferences?.duration,
+                budget: tripPreferences?.budget,
+                style: tripPreferences?.style
+              },
+              days: itineraryData?.days || []
+            }
           } 
         });
       }, 1500);
