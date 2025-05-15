@@ -73,7 +73,7 @@ func SetupDatabase() {
 		Time_close:   time.Date(2023, 10, 1, 8, 0, 0, 0, time.UTC),
 		Total_people: 15,
 		Price:        500.0,
-		Review:       2,
+		Review:       3,
 	}
 
 	db.FirstOrCreate(Landmark, &entity.Landmark{
