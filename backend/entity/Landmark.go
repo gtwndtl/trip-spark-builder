@@ -8,11 +8,19 @@ import (
 
 type Landmark struct {
 	gorm.Model
-	Name          string    
+	PlaceID       int
+	Name          string 
+	Category     string  
 	Lat            float32    
 	Lon             float32   
-	City             string             
-	Street	string   
+	Address      string            
+	Province     string 
+	District     string
+	SubDistrict  string
+	Postcode     string
+	ThumbnailURL string
+	CreatedAt    string
+	UpdatedAt    string
 	Time_open time.Time
 	Time_close time.Time
 	Total_people int

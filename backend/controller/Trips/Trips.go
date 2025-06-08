@@ -1,4 +1,4 @@
-package trips
+package Trips
 
 import (
 	"net/http"

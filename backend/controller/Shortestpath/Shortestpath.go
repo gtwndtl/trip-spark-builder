@@ -1,4 +1,4 @@
-package shortestpath
+package Shortestpath
 
 import (
 	"net/http"
