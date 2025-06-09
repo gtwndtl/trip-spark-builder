@@ -1,4 +1,4 @@
-package landmark
+package Landmark
 
 import (
 	"net/http"

@@ -11,6 +11,7 @@ type Condition struct {
 	Price  float32
 	Accommodation string
 	Landmark string
+	Style string
 	User_id  uint      
    	User    *User  `gorm:"foreignKey:User_id"`
 }

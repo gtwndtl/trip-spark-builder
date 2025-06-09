@@ -1,4 +1,4 @@
-package accommodation
+package Accommodation
 
 import (
 	"net/http"

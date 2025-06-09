@@ -1,4 +1,4 @@
-package condition
+package Condition
 
 import (
 	"net/http"
